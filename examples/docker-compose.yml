@@ -7,6 +7,8 @@ services:
     container_name: orbeon-app
     ports:
     - 8080:8080
+    volumes:
+    - ./data:/data
     environment:
     - VIRTUAL_HOST=orbeon.hostname.com
     - VIRTUAL_NETWORK=orbeon-proxy
@@ -17,9 +19,55 @@ services:
     - ZABBIX_HOSTNAME=orbeon-app
 
     - DB_TYPE=none
+## Not Working yet
+    #- DB_TYPE=mariadb
+    - DB_HOST=orbeon-db
+    - DB_PORT=3306
+    - DB_NAME=orbeon
+    - DB_USER=orbeon
+    - DB_PASS=userpassword
+
     networks:
       - proxy-tier
     restart: always
+
+  orbeon-db:
+    image: tiredofit/mariadb
+    container_name: orbeon-db
+    volumes:
+      - ./db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=orbeon
+      - MYSQL_USER=orbeon
+      - MYSQL_PASSWORD=userpassword
+
+      - ZABBIX_HOSTNAME=orbeon-db
+
+    networks:
+      - proxy-tier
+    restart: always
+
+  orbeon-db-backup:
+    container_name: orbeon-db-backup
+    image: tiredofit/mariadb-backup
+    links:
+     - orbeon-db
+    volumes:
+      - ./dbbackup:/backup
+    environment:
+      - DB_SERVER=orbeon-db
+      - DB_NAME=orbeon
+      - DB_USER=orbeon
+      - DB_PASSWORD=userpassword
+      - DB_DUMP_FREQ=1440
+      - DB_DUMP_BEGIN=0000
+      - DB_CLEANUP_TIME=8640
+      - COMPRESSION=BZ
+    networks:
+      - proxy-tier
+    restart: always
+
 
 networks:
   proxy-tier:

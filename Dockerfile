@@ -6,8 +6,10 @@ RUN apk update && \
     apk add \
         mariadb-client \
         unzip \
-        wget \
-        && \
+        wget && \
+
+### Install MariaDB Java Connector
+    curl -SlLo /usr/local/tomcat/lib/mariadb-java-client-2.1.0.jar  https://downloads.mariadb.com/Connectors/java/connector-java-2.1.0/mariadb-java-client-2.1.0.jar && \
  
 ### Download Orbeon and Unpack
     cd /usr/src && \
@@ -19,12 +21,12 @@ RUN apk update && \
     unzip -d . orbeon.war && \
     rm -rf orbeon.war && \
     rm -rf /usr/src/* && \
+    rm -rf /usr/local/tomcat/webapps/docs /usr/local/tomcat/webapps/docs /usr/local/tomcat/webapps/examples /usr/local/tomcat/webapps/host-manager /usr/local/tomcat/webapps/manager && \
 
 ### Cleanup
     apk del \
         unzip \
-        wget \
-        && \
+        wget && \
 
     rm -rf /var/cache/apk/*
 
