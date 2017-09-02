@@ -1,0 +1,64 @@
+#!/usr/bin/with-contenv bash
+
+### Set Defaults
+DB_TYPE=${DB_TYPE:-"mysql"}
+DB_HOST=${DB_HOST:-"orbeon-db"}
+DB_PORT=${DB_PORT:-"3306"}
+
+DB_NAME=${DB_NAME:-"orbeon"}
+DB_USER=${DB_USER:-"orbeon"}
+DB_PASS=${DB_PASS:-"password"}
+ORBEON_ROOT=${ORBON_ROOT:-"/"}
+
+### Set Root
+if [ "$ORBEON_ROOT" = "/" ];  then
+  mv /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps/ROOTx
+  mv /usr/local/tomcat/webapps/orbeon /usr/local/tomcat/webapps/ROOT
+else
+  mv /usr/local/tomcat/webapps/orbeon /usr/local/tomcat/webapps/$ORBEON_ROOT
+fi
+
+### Set Database
+if [ "$DB_TYPE" = "mysql" ] || [ "$DB_TYPE" = "mariadb" ];  then
+
+    while true; do
+      mysqlcmd='mysql -u'$JS_DB_USER' -h'$JS_DB_HOST' -p'$JS_DB_PASSWORD 
+      out="`$mysqlcmd -e "SELECT COUNT(*) FROM information_schema.FILES;" 2>&1`"
+      echo "$out" | grep -E "COUNT|Enter" 2>&1 > /dev/null
+      if [ $? -eq 0 ]; then
+        echo "** [orbeon] MySQL Database Connection Established"
+        break
+      fi
+      echo "** [orbeon] MySQL Database Connection Not avilable, retrying.."
+      sleep 2
+    done
+
+    cat <<EOF > /foo  
+<Resource 
+        name="jdbc/mysql"
+        driverClassName="com.mysql.jdbc.Driver"
+
+        auth="Container" 
+        type="javax.sql.DataSource"
+
+        initialSize="3" 
+        maxActive="10" 
+        maxIdle="10" 
+        maxWait="30000"
+
+        poolPreparedStatements="true"
+
+        testOnBorrow="true"
+        validationQuery="select 1"
+
+        username="$DB_USER"
+        password="$DB_PASS"
+        url="jdbc:mysql://$DB_HOST:$DB_PORT/$DB_NAME?useUnicode=true&amp;characterEncoding=UTF8"/>
+</Context>
+EOF
+                    
+fi
+
+mkdir -p /tmp/state
+touch /tmp/state/11-orbeon-init
+
