@@ -1,5 +1,5 @@
 FROM tiredofit/tomcat:8-latest
-MAINTAINER Dave Conroy <dave at tiredofit dot ca>
+LABEL maintainer="Dave Conroy (dave at tiredofit dot ca)"
 
 ### Install Dependencies
 RUN apk update && \
