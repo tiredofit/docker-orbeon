@@ -1,34 +1,31 @@
-FROM tiredofit/tomcat:8-latest
+FROM tomcat:9.0-jdk11
 LABEL maintainer="Dave Conroy (dave at tiredofit dot ca)"
 
-### Install Dependencies
-RUN apk update && \
-    apk add \
-        mariadb-client \
-        unzip \
-        wget && \
+ARG ORBEON_TAG=tag-release-2019.2-ce
+ARG ORBEON_FILE_NAME_BASE=orbeon-2019.2.0.201912301747-CE
+ARG MARIADB_CONNECTOR_VERSION=2.1.0
 
-### Install MariaDB Java Connector
-    curl -SlLo /usr/local/tomcat/lib/mariadb-java-client-2.1.0.jar  https://downloads.mariadb.com/Connectors/java/connector-java-2.1.0/mariadb-java-client-2.1.0.jar && \
- 
-### Download Orbeon and Unpack
+### Install Dependencies
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install \
+        libmariadb-java \
+        mariadb-client \
+        unzip && \
+	\
+### Download and unpack Orbeon
     cd /usr/src && \
-    wget https://github.com/orbeon/orbeon-forms/releases/download/tag-release-2017.1-ce/orbeon-2017.1.201706222342-CE.zip && \
-    unzip -d . orbeon-2017.1.201706222342-CE.zip && \
+    curl -SlLo orbeon.zip https://github.com/orbeon/orbeon-forms/releases/download/${ORBEON_TAG}/${ORBEON_FILE_NAME_BASE}.zip && \
+    unzip -d . orbeon.zip && \
     mkdir -p /usr/local/tomcat/webapps/orbeon && \
-    cp -R /usr/src/orbeon-2017.1.201706222342-CE/orbeon.war /usr/local/tomcat/webapps/orbeon/ && \
+    cp -R /usr/src/${ORBEON_FILE_NAME_BASE}/orbeon.war /usr/local/tomcat/webapps/orbeon/ && \
     cd /usr/local/tomcat/webapps/orbeon/ && \
     unzip -d . orbeon.war && \
     rm -rf orbeon.war && \
     rm -rf /usr/src/* && \
-    rm -rf /usr/local/tomcat/webapps/docs /usr/local/tomcat/webapps/docs /usr/local/tomcat/webapps/examples /usr/local/tomcat/webapps/host-manager /usr/local/tomcat/webapps/manager && \
-
+	\
 ### Cleanup
-    apk del \
-        unzip \
-        wget && \
-
-    rm -rf /var/cache/apk/*
+    apt-get -y --purge remove unzip && \
+    rm -rf /var/cache/apt/*
 
 ### Add Files
 ADD install /
