@@ -8,7 +8,7 @@ DB_PORT=${DB_PORT:-"3306"}
 DB_NAME=${DB_NAME:-"orbeon"}
 DB_USER=${DB_USER:-"orbeon"}
 DB_PASS=${DB_PASS:-"password"}
-ORBEON_ROOT=${ORBON_ROOT:-"/"}
+ORBEON_ROOT=${ORBEON_ROOT:-"/"}
 
 ### Set Database
 if [ "$DB_TYPE" = "mysql" ] || [ "$DB_TYPE" = "mariadb" ];  then
